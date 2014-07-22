@@ -263,7 +263,7 @@ if [ -d .buildpack/Debfile ]; then
     export INCLUDE_PATH="\$HOME/.dpkg/usr/include:\$INCLUDE_PATH"
     export CPATH="\$INCLUDE_PATH"
     export CPPPATH="\$INCLUDE_PATH"
-    EOF
+EOF
 
     export HOME=$BUILD_DIR
     sh $HOME/.profile.d/000_dpkg.sh
