@@ -33,3 +33,7 @@ elif [[ -f app/Console/cake ]]; then
 else
     echo "PHP"
 fi
+
+if [ -f .buildpack/Debfile ]; then
+  echo " Dpkg"
+fi
