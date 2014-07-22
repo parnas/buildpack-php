@@ -273,6 +273,6 @@ fi
 # custom shell scripts
 if [ -d .buildpack/sh ]; then
     for f in .buildpack/sh/*; do
-        sh .buildpack/sh/$f;
+        $f;
     done
 fi
