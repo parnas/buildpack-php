@@ -266,5 +266,13 @@ if [ -f .buildpack/Debfile ]; then
 EOF
 
     export HOME=$BUILD_DIR
+    chmod +x $HOME/.profile.d/000_dpkg.sh
     sh $HOME/.profile.d/000_dpkg.sh
+fi
+
+# custom shell scripts
+if [ -d .buildpack/sh ]; then
+    for f in .buildpack/sh/*.sh; do
+        sh .buildpack/sh/$f;
+    done
 fi
