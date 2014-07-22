@@ -237,9 +237,9 @@ if [ -f .buildpack/Debfile ]; then
 
     for URL in $(cat .buildpack/Debfile); do
       if [ -f $DPKG_CACHE_DIR/`basename $URL` ]; then
-        topic "Loading cached $URL"
+        echo "Loading cached $URL"
       else
-        topic "Fetching $URL"
+        echo "Fetching $URL"
         curl -L -o $DPKG_CACHE_DIR/`basename $URL` $URL
       fi
     done
@@ -247,11 +247,11 @@ if [ -f .buildpack/Debfile ]; then
     mkdir -p $BUILD_DIR/.dpkg
 
     for DEB in $(ls -1 $DPKG_CACHE_DIR/*.deb); do
-      topic "Installing $(basename $DEB)"
+      echo "Installing $(basename $DEB)"
       dpkg -x $DEB $BUILD_DIR/.dpkg/
     done
 
-    topic "Writing profile script"
+    echo "Writing profile script"
     mkdir -p $BUILD_DIR/.profile.d
     cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
     export PATH="\$HOME/.dpkg/usr/bin:$PATH"
