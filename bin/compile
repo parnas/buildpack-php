@@ -230,7 +230,7 @@ fi
 
 # DPKG
 
-if [ -d .buildpack/Debfile ]; then
+if [ -f .buildpack/Debfile ]; then
     DPKG_CACHE_DIR="$CACHE_DIR/dpkg/cache"
 
     mkdir -p $DPKG_CACHE_DIR
