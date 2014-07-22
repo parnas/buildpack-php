@@ -252,17 +252,20 @@ if [ -f .buildpack/Debfile ]; then
     done
 
     echo "Writing profile script"
+    mkdir -p $BUILD_DIR/.profile.d
+    cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
+export PATH="\$HOME/.dpkg/usr/bin:$PATH"
+export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="\$HOME/.dpkg/lib:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="\$HOME/.dpkg/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="\$HOME/.dpkg/lib64:\$LD_LIBRARY_PATH"
+export INCLUDE_PATH="\$HOME/.dpkg/usr/include:\$INCLUDE_PATH"
+export CPATH="\$INCLUDE_PATH"
+export CPPPATH="\$INCLUDE_PATH"
+EOF
 
     export HOME=$BUILD_DIR
-    export PATH="\$HOME/.dpkg/usr/bin:$PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib64:\$LD_LIBRARY_PATH"
-    export INCLUDE_PATH="\$HOME/.dpkg/usr/include:\$INCLUDE_PATH"
-    export CPATH="\$INCLUDE_PATH"
-    export CPPPATH="\$INCLUDE_PATH"
 fi
 
 # custom shell scripts
