@@ -21,14 +21,6 @@ cat <<EOF
 config_vars:
   PHP_INI_SCAN_DIR: /app/php/conf
   PATH: $HOME/.dpkg/usr/bin:$PATH
-  LD_LIBRARY_PATH: $HOME/.dpkg/usr/lib:$LD_LIBRARY_PATH
-  LD_LIBRARY_PATH: $HOME/.dpkg/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-  LD_LIBRARY_PATH: $HOME/.dpkg/lib:$LD_LIBRARY_PATH
-  LD_LIBRARY_PATH: $HOME/.dpkg/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-  LD_LIBRARY_PATH: $HOME/.dpkg/lib64:$LD_LIBRARY_PATH
-  INCLUDE_PATH: $HOME/.dpkg/usr/include:$INCLUDE_PATH
-  CPATH: $INCLUDE_PATH
-  CPPPATH: $INCLUDE_PATH
 default_process_types:
   web: bash boot.sh
 EOF

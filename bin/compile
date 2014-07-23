@@ -233,6 +233,11 @@ fi
 if [ -f .buildpack/Debfile ]; then
     DPKG_CACHE_DIR="$CACHE_DIR/dpkg/cache"
 
+    if [ -d $DPKG_CACHE_DIR ]; then
+        echo "DPKG cache directory exists. Removing $DPKG_CACHE_DIR"
+        rm -rf $DPKG_CACHE_DIR
+    fi
+
     mkdir -p $DPKG_CACHE_DIR
 
     for URL in $(cat .buildpack/Debfile); do
