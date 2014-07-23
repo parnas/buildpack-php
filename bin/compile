@@ -233,8 +233,10 @@ fi
 if [ -f .buildpack/Debfile ]; then
     DPKG_CACHE_DIR="$CACHE_DIR/dpkg/cache"
 
-    rm -rf $DPKG_CACHE_DIR
-    
+    if [-d "$CACHE_DIR/dpkg/cache" ]
+        rm -rf $DPKG_CACHE_DIR
+    fi
+
     mkdir -p $DPKG_CACHE_DIR
 
     for URL in $(cat .buildpack/Debfile); do
