@@ -233,7 +233,7 @@ fi
 if [ -f .buildpack/Debfile ]; then
     DPKG_CACHE_DIR="$CACHE_DIR/dpkg/cache"
 
-    if [-d "$CACHE_DIR/dpkg/cache" ]
+    if [-d "$CACHE_DIR/dpkg/cache" ]; then
         rm -rf $DPKG_CACHE_DIR
     fi
 
