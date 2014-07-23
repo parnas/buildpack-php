@@ -233,7 +233,7 @@ fi
 if [ -f .buildpack/Debfile ]; then
     DPKG_CACHE_DIR="$CACHE_DIR/dpkg/cache"
 
-    if [-d "$CACHE_DIR/dpkg/cache" ]; then
+    if [ -d "$CACHE_DIR/dpkg/cache" ]; then
         echo "DPKG cache directory exists. Removing $CACHE_DIR/dpkg/cache"
         rm -rf $DPKG_CACHE_DIR
     fi
@@ -255,6 +255,23 @@ if [ -f .buildpack/Debfile ]; then
       echo "Installing $(basename $DEB)"
       dpkg -x $DEB $BUILD_DIR/.dpkg/
     done
+
+    echo "Writing profile script"
+    mkdir -p $BUILD_DIR/.profile.d
+    cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
+        export PATH="\$HOME/.dpkg/usr/bin:$PATH"
+        export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib:\$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="\$HOME/.dpkg/lib:\$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="\$HOME/.dpkg/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="\$HOME/.dpkg/lib64:\$LD_LIBRARY_PATH"
+        export INCLUDE_PATH="\$HOME/.dpkg/usr/include:\$INCLUDE_PATH"
+        export CPATH="\$INCLUDE_PATH"
+        export CPPPATH="\$INCLUDE_PATH"
+EOF
+
+    export HOME=$BUILD_DIR
+    sh $HOME/.profile.d/000_dpkg.sh
 fi
 
 # custom shell scripts
