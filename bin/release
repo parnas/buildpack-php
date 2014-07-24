@@ -23,5 +23,4 @@ config_vars:
   PATH: $HOME/.dpkg/usr/bin:$PATH
 default_process_types:
   web: bash boot.sh
-  resque: code/app/console bcc:resque:worker-start
 EOF
