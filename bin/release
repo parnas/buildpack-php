@@ -23,4 +23,6 @@ config_vars:
   PATH: $HOME/.dpkg/usr/bin:$PATH
 default_process_types:
   web: bash boot.sh
+addons: []
+default_process_types: {}
 EOF
