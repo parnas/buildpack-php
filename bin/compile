@@ -51,6 +51,10 @@ if [[ -f .buildpack/envrc ]]; then
     source .buildpack/envrc
 fi
 
+
+# Load some convenience functions like status(), echo(), and indent()
+source $bp_dir/bin/common.sh
+
 # node (from cloudcontrol official node buildpack)
 # Output npm debug info on error
 trap cat_npm_debug_log ERR
