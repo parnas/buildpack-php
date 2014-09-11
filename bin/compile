@@ -56,7 +56,7 @@ fi
 trap cat_npm_debug_log ERR
 
 # Look in package.json's engines.node field for a semver range
-semver_range=$(cat $BUILD_DIR/package.json | $BP_DIR/vendor/jq -r .engines.node)
+semver_range=$(cat $BUILD_DIR/package.json | $BP_DIR/support/jq -r .engines.node)
 
 # Resolve node version using semver.io
 node_version=$(curl --silent --get --data-urlencode "range=${semver_range}" https://semver.io/node/resolve)
@@ -151,7 +151,7 @@ rm -rf "$BUILD_DIR/.npm"
 
 # If Procfile is absent, try to create one using `npm start`
 if [ ! -e $BUILD_DIR/Procfile ]; then
-  npm_start=$(cat $BUILD_DIR/package.json | $BP_DIR/vendor/jq -r .scripts.start)
+  npm_start=$(cat $BUILD_DIR/package.json | $BP_DIR/support/jq -r .scripts.start)
 
   # If `scripts.start` is set in package.json, or a server.js file
   # is present in the app root, then create a default Procfile
