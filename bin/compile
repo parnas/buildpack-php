@@ -51,127 +51,128 @@ if [[ -f .buildpack/envrc ]]; then
     source .buildpack/envrc
 fi
 
-
 # Load some convenience functions like status(), echo(), and indent()
 source $BP_DIR/bin/common.sh
 
 # node (from cloudcontrol official node buildpack)
-# Output npm debug info on error
-trap cat_npm_debug_log ERR
+if [[ -f $BUILD_DIR/package.json ]]; then
+    # Output npm debug info on error
+    trap cat_npm_debug_log ERR
 
-# Look in package.json's engines.node field for a semver range
-semver_range=$(cat $BUILD_DIR/package.json | $BP_DIR/support/jq -r .engines.node)
+    # Look in package.json's engines.node field for a semver range
+    semver_range=$(cat $BUILD_DIR/package.json | $BP_DIR/support/jq -r .engines.node)
 
-# Resolve node version using semver.io
-node_version=$(curl --silent --get --data-urlencode "range=${semver_range}" https://semver.io/node/resolve)
+    # Resolve node version using semver.io
+    node_version=$(curl --silent --get --data-urlencode "range=${semver_range}" https://semver.io/node/resolve)
 
-# Recommend using semver ranges in a safe manner
-if [ "$semver_range" == "null" ]; then
-  protip "Specify a node version in package.json"
-  semver_range=""
-elif [ "$semver_range" == "*" ]; then
-  protip "Avoid using semver ranges like '*' in engines.node"
-elif [ ${semver_range:0:1} == ">" ]; then
-  protip "Avoid using semver ranges starting with '>' in engines.node"
+    # Recommend using semver ranges in a safe manner
+    if [ "$semver_range" == "null" ]; then
+      protip "Specify a node version in package.json"
+      semver_range=""
+    elif [ "$semver_range" == "*" ]; then
+      protip "Avoid using semver ranges like '*' in engines.node"
+    elif [ ${semver_range:0:1} == ">" ]; then
+      protip "Avoid using semver ranges starting with '>' in engines.node"
+    fi
+
+    # Output info about requested range and resolved node version
+    if [ "$semver_range" == "" ]; then
+      status "Defaulting to latest stable node: $node_version"
+    else
+      status "Requested node range:  $semver_range"
+      status "Resolved node version: $node_version"
+    fi
+
+    status "Downloading and installing node"
+    node_url=http://nodejs.org/dist/v$node_version/node-v$node_version-linux-x64.tar.gz
+    curl $node_url -s -o - | tar xzf - -C $BUILD_DIR
+
+    # Move node (and npm) into ./vendor and make them executable
+    mkdir -p $BUILD_DIR/vendor
+    mv $BUILD_DIR/node-v$node_version-linux-x64 $BUILD_DIR/vendor/node
+    chmod +x $BUILD_DIR/vendor/node/bin/*
+    PATH=$BUILD_DIR/vendor/node/bin:$PATH
+
+    # Run subsequent node/npm commands from the build path
+    cd $BUILD_DIR
+
+    # If node_modules directory is checked into source control then
+    # rebuild any native deps. Otherwise, restore from the build cache.
+    if test -d $BUILD_DIR/node_modules; then
+      status "Found existing node_modules directory; skipping cache"
+      status "Rebuilding any native dependencies"
+      npm rebuild 2>&1 | indent
+    elif test -d $CACHE_DIR/node/node_modules; then
+      status "Restoring node_modules directory from cache"
+      cp -r $CACHE_DIR/node/node_modules $BUILD_DIR/
+
+      status "Pruning cached dependencies not specified in package.json"
+      npm prune 2>&1 | indent
+
+      if test -f $CACHE_DIR/node/.paasprovider/node-version && [ $(cat $CACHE_DIR/node/.paasprovider/node-version) != "$node_version" ]; then
+        status "Node version changed since last build; rebuilding dependencies"
+        npm rebuild 2>&1 | indent
+      fi
+
+    fi
+
+    # Scope config var availability only to `npm install`
+    (
+      if [ -d "$ENV_DIR" ]; then
+        status "Exporting config vars to environment"
+        export_env_dir $ENV_DIR
+      fi
+
+      status "Installing dependencies"
+      # Make npm output to STDOUT instead of its default STDERR
+      npm install --userconfig $BUILD_DIR/.npmrc --production 2>&1 | indent
+    )
+
+    # Persist goodies like node-version in the slug
+    mkdir -p $BUILD_DIR/.paasprovider
+
+    # Save resolved node version in the slug for later reference
+    echo $node_version > $BUILD_DIR/.paasprovider/node-version
+
+    # Purge node-related cached content, being careful not to purge the top-level
+    # cache, for the sake of heroku-buildpack-multi apps.
+    rm -rf $CACHE_DIR/node_modules # (for apps still on the older caching strategy)
+    rm -rf $CACHE_DIR/node
+    mkdir -p $CACHE_DIR/node
+
+    # If app has a node_modules directory, cache it.
+    if test -d $BUILD_DIR/node_modules; then
+      status "Caching node_modules directory for future builds"
+      cp -r $BUILD_DIR/node_modules $CACHE_DIR/node
+    fi
+
+    # Copy goodies to the cache
+    cp -r $BUILD_DIR/.paasprovider $CACHE_DIR/node
+
+    status "Cleaning up node-gyp and npm artifacts"
+    rm -rf "$BUILD_DIR/.node-gyp"
+    rm -rf "$BUILD_DIR/.npm"
+
+    # If Procfile is absent, try to create one using `npm start`
+    if [ ! -e $BUILD_DIR/Procfile ]; then
+      npm_start=$(cat $BUILD_DIR/package.json | $BP_DIR/support/jq -r .scripts.start)
+
+      # If `scripts.start` is set in package.json, or a server.js file
+      # is present in the app root, then create a default Procfile
+      if [ "$npm_start" != "null" ] || [ -f $BUILD_DIR/server.js ]; then
+        status "No Procfile found; Adding npm start to new Procfile"
+        echo "web: npm start" > $BUILD_DIR/Procfile
+      else
+        status "Procfile not found and npm start script is undefined"
+        protip "Create a Procfile or specify a start script in package.json"
+      fi
+    fi
+
+    # Update the PATH
+    status "Building runtime environment"
+    mkdir -p $BUILD_DIR/.profile.d
+    echo "export PATH=\"\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin:\$PATH\";" > $BUILD_DIR/.profile.d/nodejs.sh
 fi
-
-# Output info about requested range and resolved node version
-if [ "$semver_range" == "" ]; then
-  status "Defaulting to latest stable node: $node_version"
-else
-  status "Requested node range:  $semver_range"
-  status "Resolved node version: $node_version"
-fi
-
-status "Downloading and installing node"
-node_url=http://nodejs.org/dist/v$node_version/node-v$node_version-linux-x64.tar.gz
-curl $node_url -s -o - | tar xzf - -C $BUILD_DIR
-
-# Move node (and npm) into ./vendor and make them executable
-mkdir -p $BUILD_DIR/vendor
-mv $BUILD_DIR/node-v$node_version-linux-x64 $BUILD_DIR/vendor/node
-chmod +x $BUILD_DIR/vendor/node/bin/*
-PATH=$BUILD_DIR/vendor/node/bin:$PATH
-
-# Run subsequent node/npm commands from the build path
-cd $BUILD_DIR
-
-# If node_modules directory is checked into source control then
-# rebuild any native deps. Otherwise, restore from the build cache.
-if test -d $BUILD_DIR/node_modules; then
-  status "Found existing node_modules directory; skipping cache"
-  status "Rebuilding any native dependencies"
-  npm rebuild 2>&1 | indent
-elif test -d $CACHE_DIR/node/node_modules; then
-  status "Restoring node_modules directory from cache"
-  cp -r $CACHE_DIR/node/node_modules $BUILD_DIR/
-
-  status "Pruning cached dependencies not specified in package.json"
-  npm prune 2>&1 | indent
-
-  if test -f $CACHE_DIR/node/.paasprovider/node-version && [ $(cat $CACHE_DIR/node/.paasprovider/node-version) != "$node_version" ]; then
-    status "Node version changed since last build; rebuilding dependencies"
-    npm rebuild 2>&1 | indent
-  fi
-
-fi
-
-# Scope config var availability only to `npm install`
-(
-  if [ -d "$ENV_DIR" ]; then
-    status "Exporting config vars to environment"
-    export_env_dir $ENV_DIR
-  fi
-
-  status "Installing dependencies"
-  # Make npm output to STDOUT instead of its default STDERR
-  npm install --userconfig $BUILD_DIR/.npmrc --production 2>&1 | indent
-)
-
-# Persist goodies like node-version in the slug
-mkdir -p $BUILD_DIR/.paasprovider
-
-# Save resolved node version in the slug for later reference
-echo $node_version > $BUILD_DIR/.paasprovider/node-version
-
-# Purge node-related cached content, being careful not to purge the top-level
-# cache, for the sake of heroku-buildpack-multi apps.
-rm -rf $CACHE_DIR/node_modules # (for apps still on the older caching strategy)
-rm -rf $CACHE_DIR/node
-mkdir -p $CACHE_DIR/node
-
-# If app has a node_modules directory, cache it.
-if test -d $BUILD_DIR/node_modules; then
-  status "Caching node_modules directory for future builds"
-  cp -r $BUILD_DIR/node_modules $CACHE_DIR/node
-fi
-
-# Copy goodies to the cache
-cp -r $BUILD_DIR/.paasprovider $CACHE_DIR/node
-
-status "Cleaning up node-gyp and npm artifacts"
-rm -rf "$BUILD_DIR/.node-gyp"
-rm -rf "$BUILD_DIR/.npm"
-
-# If Procfile is absent, try to create one using `npm start`
-if [ ! -e $BUILD_DIR/Procfile ]; then
-  npm_start=$(cat $BUILD_DIR/package.json | $BP_DIR/support/jq -r .scripts.start)
-
-  # If `scripts.start` is set in package.json, or a server.js file
-  # is present in the app root, then create a default Procfile
-  if [ "$npm_start" != "null" ] || [ -f $BUILD_DIR/server.js ]; then
-    status "No Procfile found; Adding npm start to new Procfile"
-    echo "web: npm start" > $BUILD_DIR/Procfile
-  else
-    status "Procfile not found and npm start script is undefined"
-    protip "Create a Procfile or specify a start script in package.json"
-  fi
-fi
-
-# Update the PATH
-status "Building runtime environment"
-mkdir -p $BUILD_DIR/.profile.d
-echo "export PATH=\"\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin:\$PATH\";" > $BUILD_DIR/.profile.d/nodejs.sh
 
 
 # move everything in BUILD_DIR except buildpack-specific files to PROJECT_ROOT
