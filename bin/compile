@@ -53,7 +53,7 @@ fi
 
 
 # Load some convenience functions like status(), echo(), and indent()
-source $bp_dir/bin/common.sh
+source $BP_DIR/bin/common.sh
 
 # node (from cloudcontrol official node buildpack)
 # Output npm debug info on error
