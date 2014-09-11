@@ -54,6 +54,23 @@ fi
 # Load some convenience functions like status(), echo(), and indent()
 source $BP_DIR/bin/common.sh
 
+status "Writing profile script"
+mkdir -p $BUILD_DIR/.profile.d
+cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
+    export PATH="\$HOME/code/vendor/node/bin:\$HOME/bin:\$HOME/code/node_modules/.bin:\$HOME/.dpkg/usr/bin:\$PATH"
+    export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib:\$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib:\$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib64:\$LD_LIBRARY_PATH"
+    export INCLUDE_PATH="\$HOME/.dpkg/usr/include:\$INCLUDE_PATH"
+    export CPATH="\$INCLUDE_PATH"
+    export CPPPATH="\$INCLUDE_PATH"
+EOF
+
+export HOME=$BUILD_DIR
+sh $HOME/.profile.d/000_dpkg.sh
+
 # node (from cloudcontrol official node buildpack)
 if [[ -f $BUILD_DIR/package.json ]]; then
     # Output npm debug info on error
@@ -365,24 +382,6 @@ if [ -f .buildpack/Debfile ]; then
       dpkg -x $DEB $BUILD_DIR/.dpkg/
     done
 fi
-
-status "Writing profile script"
-mkdir -p $BUILD_DIR/.profile.d
-cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
-    export PATH="\$HOME/code/vendor/node/bin:\$HOME/bin:\$HOME/code/node_modules/.bin:\$HOME/.dpkg/usr/bin:\$PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH="\$HOME/.dpkg/lib64:\$LD_LIBRARY_PATH"
-    export INCLUDE_PATH="\$HOME/.dpkg/usr/include:\$INCLUDE_PATH"
-    export CPATH="\$INCLUDE_PATH"
-    export CPPPATH="\$INCLUDE_PATH"
-EOF
-
-export HOME=$BUILD_DIR
-sh $HOME/.profile.d/000_dpkg.sh
-
 
 # custom shell scripts
 if [ -d .buildpack/sh ]; then
