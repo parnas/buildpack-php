@@ -37,6 +37,7 @@ BP_DIR=$(readlink -f $(dirname $BIN_DIR))
 BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
+NEW_PATH=""
 
 APACHE_PATH="$BUILD_DIR/apache"
 PHP_PATH="$BUILD_DIR/php"
@@ -156,7 +157,7 @@ if [[ -f $BUILD_DIR/package.json ]]; then
     # Update the PATH
     status "Building runtime environment"
     mkdir -p $BUILD_DIR/.profile.d
-    echo "export PATH=\"\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin:\$PATH\";" > $BUILD_DIR/.profile.d/nodejs.sh
+    NEW_PATH=$NEW_PATH:\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin
 fi
 
 
@@ -368,8 +369,9 @@ if [ -f .buildpack/Debfile ]; then
 
     echo "Writing profile script"
     mkdir -p $BUILD_DIR/.profile.d
+    NEW_PATH=NEW_PATH:\$HOME/.dpkg/usr/bin
     cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
-        export PATH="\$HOME/.dpkg/usr/bin:$PATH"
+        export PATH="NEW_PATH:$PATH"
         export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib:\$LD_LIBRARY_PATH"
         export LD_LIBRARY_PATH="\$HOME/.dpkg/usr/lib/x86_64-linux-gnu:\$LD_LIBRARY_PATH"
         export LD_LIBRARY_PATH="\$HOME/.dpkg/lib:\$LD_LIBRARY_PATH"
