@@ -55,6 +55,9 @@ fi
 source $BP_DIR/bin/common.sh
 
 status "Writing profile script"
+status HOME: $HOME
+status PATH: $PATH
+
 mkdir -p $BUILD_DIR/.profile.d
 cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
     export PATH="\$HOME/code/vendor/node/bin:\$HOME/bin:\$HOME/code/node_modules/.bin:\$HOME/.dpkg/usr/bin:\$PATH"
@@ -69,7 +72,7 @@ cat <<EOF >$BUILD_DIR/.profile.d/000_dpkg.sh
 EOF
 
 export HOME=$BUILD_DIR
-sh $HOME/.profile.d/000_dpkg.sh
+source $HOME/.profile.d/000_dpkg.sh
 
 # node (from cloudcontrol official node buildpack)
 if [[ -f $BUILD_DIR/package.json ]]; then
@@ -169,10 +172,6 @@ if [[ -f $BUILD_DIR/package.json ]]; then
     status "Cleaning up node-gyp and npm artifacts"
     rm -rf "$BUILD_DIR/.node-gyp"
     rm -rf "$BUILD_DIR/.npm"
-
-    # Update the PATH
-    status "Building runtime environment"
-    mkdir -p $BUILD_DIR/.profile.d
 fi
 
 
