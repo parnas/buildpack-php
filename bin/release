@@ -20,7 +20,7 @@ cat <<EOF
 ---
 config_vars:
   PHP_INI_SCAN_DIR: /app/php/conf
-  PATH: $HOME/.dpkg/usr/bin:$PATH
+  PATH: $HOME/vendor/node/bin:$HOME/bin:$HOME/node_modules/.bin:$HOME/.dpkg/usr/bin:$PATH
 default_process_types:
   web: bash boot.sh
 addons: []
