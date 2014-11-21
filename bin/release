@@ -26,16 +26,3 @@ default_process_types:
 addons: []
 default_process_types: {}
 EOF
-
-# Ruby
-
-/usr/bin/env ruby <<EOF
-    $:.unshift File.expand_path("../../support/ruby/lib", __FILE__)
-    require "language_pack"
-
-    LanguagePack::Instrument.trace 'release', 'app.release' do
-      if pack = LanguagePack.detect(ARGV[0], ARGV[1])
-        puts pack.release
-      end
-    end
-EOF
