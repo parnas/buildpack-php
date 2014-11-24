@@ -37,3 +37,7 @@ fi
 if [ -f .buildpack/Debfile ]; then
   echo " Dpkg"
 fi
+
+if [ -f Gemfile ]; then
+  echo " Gemfile"
+fi
