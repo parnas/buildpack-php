@@ -74,6 +74,23 @@ EOF
 export HOME=$BUILD_DIR
 source $HOME/.profile.d/000_dpkg.sh
 
+# Ruby
+/usr/bin/env ruby <<EOF
+    # sync output
+    \$stdout.sync = true
+
+    \$:.unshift File.expand_path("$BP_DIR/support/ruby/lib", __FILE__)
+    require "language_pack"
+
+    LanguagePack::Instrument.trace 'compile', 'app.compile' do
+      if pack = LanguagePack.detect("$BUILD_DIR", "$CACHE_DIR")
+        pack.log("compile") do
+          pack.compile
+        end
+      end
+    end
+EOF
+
 # node (from cloudcontrol official node buildpack)
 if [[ -f $BUILD_DIR/package.json ]]; then
     # Output npm debug info on error
@@ -103,13 +120,19 @@ if [[ -f $BUILD_DIR/package.json ]]; then
       status "Resolved node version: $node_version"
     fi
 
-    status "Downloading and installing node"
-    node_url=http://nodejs.org/dist/v$node_version/node-v$node_version-linux-x64.tar.gz
-    curl $node_url -s -o - | tar xzf - -C $BUILD_DIR
 
-    # Move node (and npm) into ./vendor and make them executable
-    mkdir -p $BUILD_DIR/vendor
-    mv $BUILD_DIR/node-v$node_version-linux-x64 $BUILD_DIR/vendor/node
+    if [ -d $BUILD_DIR/vendor/node/node-v$node_version-linux-x64 ]; then
+        status "Node is in the building"
+    else
+        status "Downloading and installing node"
+        node_url=http://nodejs.org/dist/v$node_version/node-v$node_version-linux-x64.tar.gz
+        curl $node_url -s -o - | tar xzf - -C $BUILD_DIR
+
+        # Move node (and npm) into ./vendor and make them executable
+        mkdir -p $BUILD_DIR/vendor
+        mv $BUILD_DIR/node-v$node_version-linux-x64 $BUILD_DIR/vendor/node
+    fi
+
     chmod +x $BUILD_DIR/vendor/node/bin/*
     PATH=$BUILD_DIR/vendor/node/bin:$PATH
 
