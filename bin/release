@@ -27,4 +27,4 @@ addons: []
 default_process_types: {}
 EOF
 
-source $BP_DIR/bin/release.rb
+source release.rb
