@@ -27,4 +27,3 @@ addons: []
 default_process_types: {}
 EOF
 
-source release.rb
