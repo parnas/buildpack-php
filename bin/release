@@ -20,10 +20,11 @@ cat <<EOF
 ---
 config_vars:
   PHP_INI_SCAN_DIR: /app/php/conf
-  GEM_PATH: /srv/tmp/builddir/code/vendor/bundle
   PATH: $HOME/code/vendor/node/bin:$HOME/bin:$HOME/code/node_modules/.bin:$HOME/.dpkg/usr/bin:$PATH
 default_process_types:
   web: bash boot.sh
 addons: []
 default_process_types: {}
 EOF
+
+source $BP_DIR/bin/release.rb
