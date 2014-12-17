@@ -90,6 +90,8 @@ source $HOME/.profile.d/000_dpkg.sh
       end
     end
 EOF
+export GEM_PATH=/srv/tmp/builddir/code/vendor/bundle
+
 
 # node (from cloudcontrol official node buildpack)
 if [[ -f $BUILD_DIR/package.json ]]; then

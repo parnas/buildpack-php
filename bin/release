@@ -21,9 +21,11 @@ cat <<EOF
 config_vars:
   PHP_INI_SCAN_DIR: /app/php/conf
   PATH: $HOME/code/vendor/node/bin:$HOME/bin:$HOME/code/node_modules/.bin:$HOME/.dpkg/usr/bin:$PATH
+  GEM_PATH: $HOME/code/vendor/bundle
 default_process_types:
   web: bash boot.sh
 addons: []
 default_process_types: {}
 EOF
+
 
