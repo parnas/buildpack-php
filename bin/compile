@@ -92,7 +92,8 @@ source $HOME/.profile.d/000_dpkg.sh
 EOF
 
 export GEM_PATH=$BUILD_DIR/code/vendor/bundle/ruby/2.0.0
-
+export LC_ALL="en_US.UTF-8"
+export LANG="en_US.UTF-8"
 
 # node (from cloudcontrol official node buildpack)
 if [[ -f $BUILD_DIR/package.json ]]; then
