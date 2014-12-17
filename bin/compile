@@ -90,7 +90,8 @@ source $HOME/.profile.d/000_dpkg.sh
       end
     end
 EOF
-export GEM_PATH=/srv/tmp/builddir/code/vendor/bundle
+
+export GEM_PATH=$BUILD_DIR/code/vendor/bundle/ruby/2.0.0:$GEM_PATH
 
 
 # node (from cloudcontrol official node buildpack)
