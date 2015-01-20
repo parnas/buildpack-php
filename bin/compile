@@ -38,6 +38,8 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
+export CACHE_DIR
+
 APACHE_PATH="$BUILD_DIR/apache"
 PHP_PATH="$BUILD_DIR/php"
 
@@ -216,7 +218,8 @@ cp $BP_DIR/support/boot.sh .
 
 if [[ -f $PROJECT_ROOT/composer.json ]]; then
     # Caching: pre-install
-    CACHED_DIRS="vendor"
+    CACHED_DIRS=$(cat $PROJECT_ROOT/composer.json | jq -e -r '.config["vendor-dir"]') || CACHED_DIRS="vendor"
+
     mkdir -p $CACHE_DIR
     for dir in $CACHED_DIRS; do
         if [[ -e $PROJECT_ROOT/$dir ]]; then
