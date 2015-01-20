@@ -218,7 +218,7 @@ cp $BP_DIR/support/boot.sh .
 
 if [[ -f $PROJECT_ROOT/composer.json ]]; then
     # Caching: pre-install
-    CACHED_DIRS="vendor"
+    CACHED_DIRS=$(cat $PROJECT_ROOT/composer.json | jq -e -r '.config["vendor-dir"]') || CACHED_DIRS="vendor"
 
     mkdir -p $CACHE_DIR
     for dir in $CACHED_DIRS; do
@@ -242,9 +242,7 @@ if [[ -f $PROJECT_ROOT/composer.json ]]; then
     # Caching: post-install
     for dir in $CACHED_DIRS; do
         rm -rf $CACHE_DIR/$dir
-        if [[ -e $PROJECT_ROOT/$dir ]]; then
-            cp -R $PROJECT_ROOT/$dir $CACHE_DIR/
-        fi
+        cp -R $PROJECT_ROOT/$dir $CACHE_DIR/
     done
 fi
 
