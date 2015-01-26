@@ -245,7 +245,9 @@ if [[ -f $PROJECT_ROOT/composer.json ]]; then
     for dir in $CACHED_DIRS; do
         # just rm -rf'ing $dir leads to permission denied errors during copy
         splitdirs=(${dir//\// })
+        echo "******Checking " $COMPOSER_CACHE_DIR/${splitdirs[0]}
         if [[ -e $COMPOSER_CACHE_DIR/${splitdirs[0]} ]]; then
+            echo "******Deleting " $COMPOSER_CACHE_DIR/${splitdirs[0]}
             rm -rf $COMPOSER_CACHE_DIR/${splitdirs[0]}
         fi
 
