@@ -243,12 +243,10 @@ if [[ -f $PROJECT_ROOT/composer.json ]]; then
 
     # Caching: post-install
     for dir in $CACHED_DIRS; do
-    ${#DIRS[@]} - 1
         # just rm -rf'ing $dir leads to permission denied errors during copy
-        splitdirs=(${dir//\// })
-        echo "******Checking " $COMPOSER_CACHE_DIR/${splitdirs[${#splitdirs[@]}-1]}
-        if [[ -e $COMPOSER_CACHE_DIR/${splitdirs[0]} ]]; then
-            echo "******Deleting " $COMPOSER_CACHE_DIR/${splitdirs[${#splitdirs[@]}-1]}
+        echo "******Checking " $COMPOSER_CACHE_DIR/${dir##*/}
+        if [[ -e $COMPOSER_CACHE_DIR/${dir##*/} ]]; then
+            echo "******Deleting " $COMPOSER_CACHE_DIR/${dir##*/}
         fi
 
         cp -R $PROJECT_ROOT/$dir $COMPOSER_CACHE_DIR/
