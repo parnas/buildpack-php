@@ -230,7 +230,7 @@ if [[ -f $PROJECT_ROOT/composer.json ]]; then
 
         mkdir -p $PROJECT_ROOT/$dir
 
-        cp -R $COMPOSER_CACHE_DIR/${dir##*/}/* $PROJECT_ROOT/$dir &> /dev/null || true
+        cp -R $COMPOSER_CACHE_DIR/${dir##*/}/* $PROJECT_ROOT/$dir/ &> /dev/null || true
     done
 
     # Install composer
