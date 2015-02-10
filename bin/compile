@@ -228,7 +228,7 @@ if [[ -f $PROJECT_ROOT/composer.json ]]; then
             cp -R $PROJECT_ROOT/$dir $COMPOSER_CACHE_DIR/ &> /dev/null || true
         fi
         status "$COMPOSER_CACHE_DIR/${dir##*/}"
-        ls -d $COMPOSER_CACHE_DIR/${dir##*/}
+        ls -d $COMPOSER_CACHE_DIR/${dir##*/}/ *
         cp -R $COMPOSER_CACHE_DIR/${dir##*/} $PROJECT_ROOT/ &> /dev/null || true
     done
 
