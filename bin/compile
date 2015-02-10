@@ -222,12 +222,12 @@ if [[ -f $PROJECT_ROOT/composer.json ]]; then
     # Caching: pre-install
     CACHED_DIRS=$(cat $PROJECT_ROOT/composer.json | jq -e -r '.config["vendor-dir"]') || CACHED_DIRS="vendor"
 
-    mkdir -p $CACHE_DIR/composer
+    mkdir -p $COMPOSER_CACHE_DIR
     for dir in $CACHED_DIRS; do
         if [[ -e $PROJECT_ROOT/$dir ]]; then
             cp -R $PROJECT_ROOT/$dir $COMPOSER_CACHE_DIR/ &> /dev/null || true
         fi
-        cp -R $COMPOSER_CACHE_DIR/$dir $PROJECT_ROOT/ &> /dev/null || true
+        cp -R $COMPOSER_CACHE_DIR/${dir##*/} $PROJECT_ROOT/ &> /dev/null || true
     done
 
     # Install composer
